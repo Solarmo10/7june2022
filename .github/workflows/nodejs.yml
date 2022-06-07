@@ -35,7 +35,15 @@ jobs:
 
       - name: Verify the build Successful
         run: ls -la public
-          
-          
 
-  
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ssh_private_key }}" > ~/.ssh/deploy_key
+          sudo chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.host}}" > ~/.ssh/known_hosts
+          
+      - name: Copy the Build to the server
+        run:
+          rsync -avz -e "ssh -i ~/.ssh/deploy_key" public/ "${{ secrets.user }}@${{ secrets.host }}:/home/${{ secrets.user }}/gatsby-app"
