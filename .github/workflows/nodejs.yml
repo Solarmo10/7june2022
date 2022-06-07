@@ -36,14 +36,26 @@ jobs:
       - name: Verify the build Successful
         run: ls -la public
 
+      - name: ssh-scp-deploy
+        uses: marcodallasanta/ssh-scp-deploy@v1.2.0
+        with:
+          local: ./public                                              # Local file path - REQUIRED false - DEFAULT ./
+          remote: /home/mdakheel/public                                # Remote file path - REQUIRED false - DEFAULT ~/
+          host: 20.232.185.248                                         # Remote server address - REQUIRED true
+          user: mdakheel                                               # Remote server user - REQUIRED true
+          key: ${{secrets.SSH_KEY}}                                    # Remote server private key - REQUIRED at least one of "password" or "key" 
+          pre_upload: rm -rf /home/mdakheel/public                     # Command to run via ssh before scp upload - REQUIRED false
+          post_upload: sudo cp -r public/* /var/www/html               # Command to run via ssh after scp upload - REQUIRED false
+          scp_options: -r                                              # Flags to use during scp - REQUIRED false - DEFAULT ''
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.ssh_private_key }}" > ~/.ssh/deploy_key
-          sudo chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.host}}" > ~/.ssh/known_hosts
+
+      # - name: Setup SSH
+      #   run: |
+      #     mkdir -p ~/.ssh
+      #     echo "${{ secrets.ssh_private_key }}" > ~/.ssh/deploy_key
+      #     sudo chmod 600 ~/.ssh/deploy_key
+      #     ssh-keyscan -H "${{ secrets.host}}" > ~/.ssh/known_hosts
           
-      - name: Copy the Build to the server
-        run:
-          rsync -avz -e "ssh -i ~/.ssh/deploy_key" public/ "${{ secrets.user }}@${{ secrets.host }}:/home/${{ secrets.user }}/gatsby-app"
+      # - name: Copy the Build to the server
+      #   run:
+      #     rsync -avz -e "ssh -i ~/.ssh/deploy_key" public/ "${{ secrets.user }}@${{ secrets.host }}:/home/${{ secrets.user }}/gatsby-app"
